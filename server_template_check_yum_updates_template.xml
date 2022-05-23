@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>6.0</version>
+    <date>2022-05-20T14:21:14Z</date>
+    <groups>
+        <group>
+            <uuid>7df96b18c230490a9a0a9e2307226338</uuid>
+            <name>Templates</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <uuid>22a098ea52554ff2b4a3285dc0417473</uuid>
+            <template>Template Yum Check-Update Monitor</template>
+            <name>Template Yum Check-Update Monitor</name>
+            <description>Uses yum check-update to get the info on which packages require updates in a RHEL / CentOS related system. Tracks name of the package, version number and source repo from which the package will be downloaded.</description>
+            <groups>
+                <group>
+                    <name>Templates</name>
+                </group>
+            </groups>
+            <items>
+                <item>
+                    <uuid>b1d1de02fff14758baa066c9197465b5</uuid>
+                    <name>Individual Package to Update</name>
+                    <type>TRAP</type>
+                    <key>yum.individualpackagetoupdate</key>
+                    <delay>0</delay>
+                    <history>1d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <description>Name, version and source for each package of the yum check-update</description>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>YUM Update</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>fa640eba441b4107a4704ca4bea8cf79</uuid>
+                    <name>Individual Package Name</name>
+                    <type>DEPENDENT</type>
+                    <key>yum.individualpackagetoupdate.name</key>
+                    <delay>0</delay>
+                    <history>1d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>REGEX</type>
+                            <parameters>
+                                <parameter>([^\s]+)</parameter>
+                                <parameter>\0</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>yum.individualpackagetoupdate</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>YUM Update</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>4882453d4c6c4cd585d2e6836e81df83</uuid>
+                    <name>Individual Package Source Repo</name>
+                    <type>DEPENDENT</type>
+                    <key>yum.individualpackagetoupdate.source</key>
+                    <delay>0</delay>
+                    <history>1d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>REGEX</type>
+                            <parameters>
+                                <parameter>\b\S+$</parameter>
+                                <parameter>\0</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>yum.individualpackagetoupdate</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>YUM Update</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>8b24264a637e4b1ca1817914ee42c660</uuid>
+                    <name>Individual Package Version</name>
+                    <type>DEPENDENT</type>
+                    <key>yum.individualpackagetoupdate.version</key>
+                    <delay>0</delay>
+                    <history>1d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <preprocessing>
+                        <step>
+                            <type>REGEX</type>
+                            <parameters>
+                                <parameter>\s([^\s]+)\s</parameter>
+                                <parameter>\0</parameter>
+                            </parameters>
+                        </step>
+                    </preprocessing>
+                    <master_item>
+                        <key>yum.individualpackagetoupdate</key>
+                    </master_item>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>YUM Update</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>a24f914fedc44aae80697fb0ca89d8b8</uuid>
+                    <name>Total Packages to Update - Sum</name>
+                    <type>TRAP</type>
+                    <key>yum.packagestoupdate.count</key>
+                    <delay>0</delay>
+                    <description>Number of packages ready to be updated</description>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>YUM Update</value>
+                        </tag>
+                    </tags>
+                </item>
+                <item>
+                    <uuid>89ab564800aa4f94929f9ae86a450c0b</uuid>
+                    <name>Total Packages Full Summary</name>
+                    <type>TRAP</type>
+                    <key>yum.packagestoupdate.description</key>
+                    <delay>0</delay>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <description>Summary of packages ready to be updated</description>
+                    <tags>
+                        <tag>
+                            <tag>Application</tag>
+                            <value>YUM Update</value>
+                        </tag>
+                    </tags>
+                </item>
+            </items>
+        </template>
+    </templates>
+    <triggers>
+        <trigger>
+            <uuid>71368d4080da4f909cd1baf4f9d1f4e1</uuid>
+            <expression>last(/Template Yum Check-Update Monitor/yum.packagestoupdate.count)&gt;0 and
+
+count(/Template Yum Check-Update Monitor/yum.individualpackagetoupdate,10m)&gt;0 and
+
+last(/Template Yum Check-Update Monitor/yum.packagestoupdate.description)&lt;&gt;0</expression>
+            <recovery_mode>RECOVERY_EXPRESSION</recovery_mode>
+            <recovery_expression>last(/Template Yum Check-Update Monitor/yum.packagestoupdate.count)=0 and
+
+count(/Template Yum Check-Update Monitor/yum.individualpackagetoupdate,10m)=0</recovery_expression>
+            <name>{ITEM.LASTVALUE1} Updates available in {HOST.NAME}</name>
+            <opdata>sudo yum update</opdata>
+            <priority>WARNING</priority>
+        </trigger>
+    </triggers>
+</zabbix_export>

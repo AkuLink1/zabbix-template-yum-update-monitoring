@@ -1,0 +1,169 @@
+{
+    "zabbix_export": {
+        "version": "6.0",
+        "date": "2022-05-20T14:21:20Z",
+        "groups": [
+            {
+                "uuid": "7df96b18c230490a9a0a9e2307226338",
+                "name": "Templates"
+            }
+        ],
+        "templates": [
+            {
+                "uuid": "22a098ea52554ff2b4a3285dc0417473",
+                "template": "Template Yum Check-Update Monitor",
+                "name": "Template Yum Check-Update Monitor",
+                "description": "Uses yum check-update to get the info on which packages require updates in a RHEL / CentOS related system. Tracks name of the package, version number and source repo from which the package will be downloaded.",
+                "groups": [
+                    {
+                        "name": "Templates"
+                    }
+                ],
+                "items": [
+                    {
+                        "uuid": "b1d1de02fff14758baa066c9197465b5",
+                        "name": "Individual Package to Update",
+                        "type": "TRAP",
+                        "key": "yum.individualpackagetoupdate",
+                        "delay": "0",
+                        "history": "1d",
+                        "trends": "0",
+                        "value_type": "TEXT",
+                        "description": "Name, version and source for each package of the yum check-update",
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "YUM Update"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "fa640eba441b4107a4704ca4bea8cf79",
+                        "name": "Individual Package Name",
+                        "type": "DEPENDENT",
+                        "key": "yum.individualpackagetoupdate.name",
+                        "delay": "0",
+                        "history": "1d",
+                        "trends": "0",
+                        "value_type": "TEXT",
+                        "preprocessing": [
+                            {
+                                "type": "REGEX",
+                                "parameters": [
+                                    "([^\\s]+)",
+                                    "\\0"
+                                ]
+                            }
+                        ],
+                        "master_item": {
+                            "key": "yum.individualpackagetoupdate"
+                        },
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "YUM Update"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "4882453d4c6c4cd585d2e6836e81df83",
+                        "name": "Individual Package Source Repo",
+                        "type": "DEPENDENT",
+                        "key": "yum.individualpackagetoupdate.source",
+                        "delay": "0",
+                        "history": "1d",
+                        "trends": "0",
+                        "value_type": "TEXT",
+                        "preprocessing": [
+                            {
+                                "type": "REGEX",
+                                "parameters": [
+                                    "\\b\\S+$",
+                                    "\\0"
+                                ]
+                            }
+                        ],
+                        "master_item": {
+                            "key": "yum.individualpackagetoupdate"
+                        },
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "YUM Update"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "8b24264a637e4b1ca1817914ee42c660",
+                        "name": "Individual Package Version",
+                        "type": "DEPENDENT",
+                        "key": "yum.individualpackagetoupdate.version",
+                        "delay": "0",
+                        "history": "1d",
+                        "trends": "0",
+                        "value_type": "TEXT",
+                        "preprocessing": [
+                            {
+                                "type": "REGEX",
+                                "parameters": [
+                                    "\\s([^\\s]+)\\s",
+                                    "\\0"
+                                ]
+                            }
+                        ],
+                        "master_item": {
+                            "key": "yum.individualpackagetoupdate"
+                        },
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "YUM Update"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "a24f914fedc44aae80697fb0ca89d8b8",
+                        "name": "Total Packages to Update - Sum",
+                        "type": "TRAP",
+                        "key": "yum.packagestoupdate.count",
+                        "delay": "0",
+                        "description": "Number of packages ready to be updated",
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "YUM Update"
+                            }
+                        ]
+                    },
+                    {
+                        "uuid": "89ab564800aa4f94929f9ae86a450c0b",
+                        "name": "Total Packages Full Summary",
+                        "type": "TRAP",
+                        "key": "yum.packagestoupdate.description",
+                        "delay": "0",
+                        "trends": "0",
+                        "value_type": "TEXT",
+                        "description": "Summary of packages ready to be updated",
+                        "tags": [
+                            {
+                                "tag": "Application",
+                                "value": "YUM Update"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "triggers": [
+            {
+                "uuid": "71368d4080da4f909cd1baf4f9d1f4e1",
+                "expression": "last(/Template Yum Check-Update Monitor/yum.packagestoupdate.count)>0 and\n\ncount(/Template Yum Check-Update Monitor/yum.individualpackagetoupdate,10m)>0 and\n\nlast(/Template Yum Check-Update Monitor/yum.packagestoupdate.description)<>0",
+                "recovery_mode": "RECOVERY_EXPRESSION",
+                "recovery_expression": "last(/Template Yum Check-Update Monitor/yum.packagestoupdate.count)=0 and\n\ncount(/Template Yum Check-Update Monitor/yum.individualpackagetoupdate,10m)=0",
+                "name": "{ITEM.LASTVALUE1} Updates available in {HOST.NAME}",
+                "opdata": "sudo yum update",
+                "priority": "WARNING"
+            }
+        ]
+    }
+}
